@@ -1,0 +1,9 @@
+*.db
+*.db-shm
+*.db-wal
+.DS_Store
+/ai-decision-reviewer
+/ai-decision-reviewer.exe
+build/bin/
+frontend/dist/
+frontend/node_modules/
