@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#161B26"/>
+      <stop offset="100%" stop-color="#0A0C12"/>
+    </linearGradient>
+  </defs>
+
+  <rect x="32" y="32" width="960" height="960" rx="220" fill="url(#bg)"/>
+  <rect x="32.5" y="32.5" width="959" height="959" rx="219.5" fill="none" stroke="#2A3040" stroke-width="1"/>
+
+  <!-- インボックスのトレイ -->
+  <g stroke="#4B5568" stroke-width="24" fill="none" stroke-linejoin="round" stroke-linecap="round">
+    <path d="M270 470 L 380 470 L 430 560 L 594 560 L 644 470 L 754 470 L 754 700 C 754 722 736 740 714 740 L 310 740 C 288 740 270 722 270 700 Z"/>
+  </g>
+
+  <!-- 届いたアイテム（傾けたカード + 行） -->
+  <g transform="rotate(-6 512 380)">
+    <rect x="392" y="250" width="240" height="170" rx="18" fill="#2E3646"/>
+    <rect x="424" y="296" width="176" height="14" rx="7" fill="#7A8598"/>
+    <rect x="424" y="328" width="140" height="14" rx="7" fill="#7A8598"/>
+    <rect x="424" y="360" width="100" height="14" rx="7" fill="#5c6a80"/>
+  </g>
+
+  <!-- 判断待ちバッジ -->
+  <circle cx="742" cy="694" r="96" fill="#0A0C12"/>
+  <circle cx="742" cy="694" r="78" fill="#fab219"/>
+  <text x="742" y="726" font-family="system-ui, -apple-system, sans-serif" font-size="92" font-weight="700" fill="#1a1204" text-anchor="middle">?</text>
+</svg>

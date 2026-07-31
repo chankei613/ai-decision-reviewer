@@ -1,0 +1,102 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    strategy:
+      matrix:
+        include:
+          - os: macos-14
+            platform: darwin/arm64
+            artifact: ai-decision-reviewer-darwin-arm64
+          - os: macos-14
+            platform: darwin/amd64
+            artifact: ai-decision-reviewer-darwin-amd64
+          - os: windows-latest
+            platform: windows/amd64
+            artifact: ai-decision-reviewer-windows-amd64
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.23'
+          cache: true
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Wails
+        run: go install github.com/wailsapp/wails/v2/cmd/wails@v2.12.0
+
+      - name: Install frontend deps
+        run: npm install --legacy-peer-deps
+        working-directory: frontend
+
+      - name: Build
+        run: wails build -platform ${{ matrix.platform }} -o ${{ matrix.artifact }}
+
+      - name: Import certificate (macOS)
+        if: runner.os == 'macOS'
+        env:
+          MACOS_CERTIFICATE: ${{ secrets.MACOS_CERTIFICATE }}
+          MACOS_CERTIFICATE_PWD: ${{ secrets.MACOS_CERTIFICATE_PWD }}
+        run: |
+          echo "$MACOS_CERTIFICATE" | base64 --decode > certificate.p12
+          security create-keychain -p actions-keychain build.keychain
+          security default-keychain -s build.keychain
+          security unlock-keychain -p actions-keychain build.keychain
+          security import certificate.p12 -k build.keychain -P "$MACOS_CERTIFICATE_PWD" -T /usr/bin/codesign
+          security set-key-partition-list -S apple-tool:,apple: -s -k actions-keychain build.keychain
+
+      - name: Sign app (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          IDENTITY=$(security find-identity -v -p codesigning build.keychain \
+            | grep "Developer ID Application" | awk '{print $2}')
+          codesign --deep --force --options=runtime \
+            --entitlements build/darwin/entitlements.plist \
+            --sign "$IDENTITY" \
+            --timestamp \
+            build/bin/ai-decision-reviewer.app
+
+      - name: Notarize app (macOS)
+        if: runner.os == 'macOS'
+        env:
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_APP_PWD: ${{ secrets.APPLE_APP_PWD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          ditto -c -k --keepParent build/bin/ai-decision-reviewer.app notarize-submission.zip
+          xcrun notarytool submit notarize-submission.zip \
+            --apple-id "$APPLE_ID" \
+            --password "$APPLE_APP_PWD" \
+            --team-id "$APPLE_TEAM_ID" \
+            --wait
+          xcrun stapler staple build/bin/ai-decision-reviewer.app
+          rm -f notarize-submission.zip
+
+      - name: Zip artifact (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          cd build/bin
+          zip -r ${{ matrix.artifact }}.zip ai-decision-reviewer.app
+
+      - name: Upload to Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            build/bin/${{ matrix.artifact }}.zip
+            build/bin/${{ matrix.artifact }}.exe
+            build/bin/${{ matrix.artifact }}
