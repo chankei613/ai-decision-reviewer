@@ -1,22 +1,60 @@
 package main
 
 import (
-	"log"
-	"net/http"
+	"context"
+	"embed"
 
-	"github.com/chankei613/ai-decision-reviewer/internal/api"
-	"github.com/chankei613/ai-decision-reviewer/internal/db"
+	"github.com/wailsapp/wails/v2"
+	"github.com/wailsapp/wails/v2/pkg/options"
+	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
+	"github.com/wailsapp/wails/v2/pkg/options/mac"
+	"github.com/wailsapp/wails/v2/pkg/options/windows"
+	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
 
-func main() {
-	conn, err := db.Init("ai-decision-reviewer.db")
-	if err != nil {
-		log.Fatalf("db init failed: %v", err)
-	}
+//go:embed all:frontend/dist
+var assets embed.FS
 
-	router := api.NewRouter(conn)
-	log.Println("ai-decision-reviewer backend listening on :8423")
-	if err := http.ListenAndServe(":8423", router); err != nil {
-		log.Fatal(err)
+func main() {
+	app := NewApp()
+
+	err := wails.Run(&options.App{
+		Title:     "AI Decision Reviewer",
+		Width:     1200,
+		Height:    760,
+		MinWidth:  900,
+		MinHeight: 560,
+		AssetServer: &assetserver.Options{
+			Assets: assets,
+		},
+		OnStartup:  app.startup,
+		OnShutdown: app.shutdown,
+		// 閉じるボタンでウインドウを非表示にする（他プロセスからのIngestionはバックグラウンドで動き続ける）。
+		// 完全終了は app.Quit() バインディングで行う。
+		OnBeforeClose: func(ctx context.Context) bool {
+			runtime.WindowHide(ctx)
+			return true
+		},
+		Bind: []interface{}{
+			app,
+		},
+		Mac: &mac.Options{
+			TitleBar:             mac.TitleBarHiddenInset(),
+			Appearance:           mac.DefaultAppearance,
+			WebviewIsTransparent: false,
+			WindowIsTranslucent:  false,
+			About: &mac.AboutInfo{
+				Title:   "AI Decision Reviewer",
+				Message: "v" + AppVersion,
+			},
+		},
+		Windows: &windows.Options{
+			WebviewIsTransparent: false,
+			WindowIsTranslucent:  false,
+			DisablePinchZoom:     true,
+		},
+	})
+	if err != nil {
+		panic(err)
 	}
 }

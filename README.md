@@ -8,21 +8,34 @@ AIが実行中に自分で「ここは人間の判断が要る」とフラグを
 
 詳細は [docs/spec.md](docs/spec.md) を参照。
 
-## 現在のステータス: Phase 1-2（Ingestion/CRUD API + SSE）完了
+## 現在のステータス: Phase 3（Wails + Vue3 UI）完了
 
 - [x] Phase 0: プロジェクト立ち上げ
 - [x] Phase 1: データモデル・Ingestion/CRUD API（APIキー認証・二重解決防止）
 - [x] Phase 2: 集計API・SSEストリーム
-- [ ] Phase 3: Wails + Vue3 UI
+- [x] Phase 3: Wails + Vue3 UI（インボックス・詳細ドロワー・解決済み・ダッシュボード・Help・設定）
 - [ ] Phase 4: 仕上げ・署名・配布・LP
 
-## 使い方（開発用ヘッドレスサーバー）
+## 使い方（デスクトップアプリ）
+
+1. [Releases](../../releases) から自分のOS用のビルドをダウンロードして起動する
+2. Settings画面でAPIキーを発行し、表示されるAPIエンドポイントと合わせてAIシステム側に設定する
+3. AIシステムがエスカレーションをPOSTすると、インボックスにリアルタイムで並ぶ
+4. アイテムを開いてSummary/Contextを確認し、Approve/Rejectで応答する（任意でフィードバックを添える）
+5. 一度解決したアイテムは解決済みビューに移動し、再解決はできない
+
+アプリはウインドウを閉じている間もAPIを起動したまま待ち受け続ける。完全に終了するにはSettings画面の「Quit」を使う。
+
+## 使い方（開発・ヘッドレスサーバー）
 
 ```bash
 go mod tidy   # 依存解決
-go run .      # :8423 でAPIサーバー起動（SQLite: ai-decision-reviewer.db）
-go run ./cmd/smoketest  # bootstrap鍵発行 → decision追加 → 承認 → 二重解決の拒否 → SSE配信 の一連を確認する自己完結テスト
+make run      # :8423 でAPIサーバー起動（SQLite: ai-decision-reviewer.db、cmd/adrserve）
+make ui       # frontend/ の vite dev サーバー起動
+make smoke    # bootstrap鍵発行 → decision追加 → 承認 → 二重解決の拒否 → SSE配信 の一連を確認する自己完結テスト
 ```
+
+デスクトップアプリとしてビルドするには `wails build`（`wails.json` 参照）。
 
 ### APIキー認証
 
