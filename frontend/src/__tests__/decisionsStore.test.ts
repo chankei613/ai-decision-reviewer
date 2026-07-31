@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { setActivePinia, createPinia } from 'pinia'
 import { useDecisionsStore } from '@/stores/decisions'
 import { ListDecisions, ApproveDecision } from '../../wailsjs/go/main/App'
+import { api } from '../../wailsjs/go/models'
 
 describe('decisions store error handling', () => {
   beforeEach(() => {
@@ -26,7 +27,7 @@ describe('decisions store error handling', () => {
     await store.search()
     expect(store.error).not.toBeNull()
 
-    vi.mocked(ListDecisions).mockResolvedValueOnce({ items: [], total: 0 })
+    vi.mocked(ListDecisions).mockResolvedValueOnce(api.ListDecisionsResult.createFrom({ items: [], total: 0 }))
     await store.search()
 
     expect(store.error).toBeNull()
