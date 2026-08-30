@@ -8,13 +8,18 @@ AIが実行中に自分で「ここは人間の判断が要る」とフラグを
 
 詳細は [docs/spec.md](docs/spec.md) を参照。
 
-## 現在のステータス: Phase 3（Wails + Vue3 UI）完了
+## 現在のステータス: v0.1.0 リリース済み
 
 - [x] Phase 0: プロジェクト立ち上げ
 - [x] Phase 1: データモデル・Ingestion/CRUD API（APIキー認証・二重解決防止）
 - [x] Phase 2: 集計API・SSEストリーム
 - [x] Phase 3: Wails + Vue3 UI（インボックス・詳細ドロワー・解決済み・ダッシュボード・Help・設定）
-- [ ] Phase 4: 仕上げ・署名・配布・LP
+- [x] Phase 4: 仕上げ・署名・配布・LP
+
+macOSアプリ（署名・公証済み、Apple Silicon / Intel 共通のUniversalバイナリ）は
+[GitHub Releases](https://github.com/chankei613/ai-decision-reviewer/releases) から、
+ランディングページは https://ai-decision-reviewer.vercel.app/ から入手できる。
+アプリ内のHelpタブに使い方の説明がある。
 
 ## 使い方（デスクトップアプリ）
 
